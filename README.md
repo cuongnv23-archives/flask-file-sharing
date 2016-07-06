@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/learningpython08/flask-file-sharing.svg?branch=master)](https://travis-ci.org/learningpython08/flask-file-sharing)
 ### flask-file-sharing
 A flask-based app to share file.
 This is work in-progress.
