@@ -10,7 +10,7 @@ with open(path.join(cur_dir, 'README.md')) as f:
 
 
 setup(
-    name='flask-file-sharing',
+    name='flask_file_sharing',
     packages=['upload'],
     version='0.0.1',
     description='A flask-based file sharing server',
