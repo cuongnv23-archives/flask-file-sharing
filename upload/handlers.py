@@ -4,7 +4,7 @@ import os
 from flask import Flask, request, make_response, \
     send_from_directory, abort, url_for
 from werkzeug.utils import secure_filename
-from config import UPLOAD_DIR, MAX_FILE_SIZE
+from upload.settings import UPLOAD_DIR, MAX_FILE_SIZE
 from upload import utils
 from upload.logs import logger
 

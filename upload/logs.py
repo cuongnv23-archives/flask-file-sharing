@@ -2,12 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-try:
-    from config import LOG_FILE, LOG_LEVEL
-except ImportError:
-    LOG_FILE = '/tmp/upload.log'
-    LOG_LEVEL = 'INFO'
-
+from upload.settings import LOG_FILE, LOG_LEVEL
 
 loglevel = {'CRITICAL': logging.CRITICAL,
             'ERROR': logging.ERROR,
