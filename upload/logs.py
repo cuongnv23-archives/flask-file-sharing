@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from upload.settings import LOG_FILE, LOG_LEVEL
+from config import LOG_FILE, LOG_LEVEL
 
 loglevel = {'CRITICAL': logging.CRITICAL,
             'ERROR': logging.ERROR,
