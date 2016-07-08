@@ -33,8 +33,8 @@ def rand_dir():
                    for _ in range(RAND_DIR_LENGTH))
 
 
-def write_put(file_path):
-    ''' Write file for PUT request '''
+def write_stream(file_path):
+    ''' Write request.stream to file '''
     try:
         with open(file_path, 'wb') as f:
             while True:
@@ -48,8 +48,12 @@ def write_put(file_path):
         raise
 
 
-def write_post(file_path, file_obj):
-    ''' Write file to POST method '''
+def write_fileobj(file_path, file_obj):
+    '''
+    Write file by save() method documented here:
+    http://werkzeug.pocoo.org/docs/0.11/datastructures/#werkzeug.datastructures.FileStorage.save
+    Usually for POST request
+    '''
     try:
         file_obj.save(file_path, BUFFER_SIZE)
     except:
