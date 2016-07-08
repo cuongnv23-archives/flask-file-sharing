@@ -4,7 +4,7 @@
 import os
 import string
 import errno
-from upload.settings import RAND_DIR_LENGTH, BUFFER_SIZE, MAX_FILE_SIZE
+from config import RAND_DIR_LENGTH, BUFFER_SIZE, MAX_FILE_SIZE
 from random import SystemRandom as SR
 from flask import request, abort
 from upload.logs import logger
