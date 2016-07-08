@@ -18,10 +18,6 @@ from upload.logs import logger
 def mkdir(path):
     ''' Create directory '''
     logger.info('Creating directory {}'.format(path))
-    if os.path.isdir(path) and not os.access(path, os.W_OK):
-        logger.error('{} exists but not accessible'.format(path),
-                     exc_info=True)
-        raise OSError('{} exists but not accessible'.format(path))
     try:
         os.mkdir(path)
         logger.info('{} created!'.format(path))
@@ -32,9 +28,8 @@ def mkdir(path):
         if os_exc.errno == errno.EEXIST:
             logger.warn('{} already exists'.format(path))
         else:
+            logger.error('Failed to create dir {}'.format(path), exc_info=True)
             raise
-    except:
-        raise
 
 
 def rand_dir():
