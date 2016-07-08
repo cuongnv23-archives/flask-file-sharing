@@ -43,13 +43,9 @@ def rand_dir():
                    for _ in range(RAND_DIR_LENGTH))
 
 
-def save(file_path, file_obj=None):
-    ''' Write file_obj to file_path depend on method '''
-    logger.info('Saving file to {}'.format(file_path))
+def _write_put(file_path):
+    ''' Write file for PUT request '''
     try:
-        file_obj.save(file_path, BUFFER_SIZE)
-        logger.info('{} saved!'.format(file_path))
-    except AttributeError:
         with open(file_path, 'wb') as f:
             while True:
                 chunk = request.stream.read(BUFFER_SIZE)
@@ -57,11 +53,28 @@ def save(file_path, file_obj=None):
                     f.write(chunk)
                 else:
                     break
-        logger.info('{} saved!'.format(file_path))
     except:
-        logger.error('Failed to write file {}'.format(file_path),
-                     exc_info=True)
+        logger.error('Failed to save file {}'.format(file_path), exc_info=True)
         raise
+
+
+def _write_post(file_path, file_obj):
+    ''' Write file to POST method '''
+    try:
+        file_obj.save(file_path, BUFFER_SIZE)
+    except:
+        logger.error('Failed to save file {}'.format(file_path, exc_info=True))
+        raise
+
+
+def save(file_path, file_obj=None):
+    ''' Write file_obj to file_path depend on method '''
+    logger.info('Saving file to {}'.format(file_path))
+    if file_obj:
+        _write_post(file_path, file_obj)
+    else:
+        _write_put(file_path)
+    logger.info('{} saved!'.format(file_path))
 
 
 def validate_data(filename):
