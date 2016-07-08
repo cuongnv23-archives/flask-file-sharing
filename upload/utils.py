@@ -25,7 +25,7 @@ def mkdir(path):
         logger.error('{}'.format(io_exc), exc_info=True)
         raise
     except OSError as os_exc:
-        if os_exc.errno == errno.EEXIST:
+        if os_exc.errno == errno.EEXIST and os.access(path, os.W_OK):
             logger.warn('{} already exists'.format(path))
         else:
             logger.error('Failed to create dir {}'.format(path), exc_info=True)
@@ -38,7 +38,7 @@ def rand_dir():
                    for _ in range(RAND_DIR_LENGTH))
 
 
-def _write_put(file_path):
+def write_put(file_path):
     ''' Write file for PUT request '''
     try:
         with open(file_path, 'wb') as f:
@@ -53,23 +53,13 @@ def _write_put(file_path):
         raise
 
 
-def _write_post(file_path, file_obj):
+def write_post(file_path, file_obj):
     ''' Write file to POST method '''
     try:
         file_obj.save(file_path, BUFFER_SIZE)
     except:
         logger.error('Failed to save file {}'.format(file_path, exc_info=True))
         raise
-
-
-def save(file_path, file_obj=None):
-    ''' Write file_obj to file_path depend on method '''
-    logger.info('Saving file to {}'.format(file_path))
-    if file_obj:
-        _write_post(file_path, file_obj)
-    else:
-        _write_put(file_path)
-    logger.info('{} saved!'.format(file_path))
 
 
 def validate_data(filename):

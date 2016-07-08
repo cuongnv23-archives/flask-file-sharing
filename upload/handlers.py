@@ -47,6 +47,9 @@ def file_too_large(error):
 @app.route('/<string:filename>', methods=['POST', 'PUT'])
 def upload(filename):
     ''' Write data '''
+
+    rand_dir = utils.rand_dir()
+    store_dir = os.path.join(UPLOAD_DIR, rand_dir)
     if request.method == 'POST':
         if filename:
             abort(404, 'Endpoint \'{}\' not found'.format(filename))
@@ -55,18 +58,18 @@ def upload(filename):
             abort(400, 'Data not received')
         filename = secure_filename(file_obj.filename)
         utils.validate_data(filename)
+        utils.mkdir(store_dir)
+        url_path = '/'.join([rand_dir, filename])
+        utils.write_post(os.path.join(store_dir, filename), file_obj)
     elif request.method == 'PUT':
         if not filename:
             abort(400, 'Data not received')
         filename = secure_filename(filename)
         utils.validate_data(filename)
         file_obj = None
-
-    rand_dir = utils.rand_dir()
-    store_dir = os.path.join(UPLOAD_DIR, rand_dir)
-    utils.mkdir(store_dir)
-    url_path = '/'.join([rand_dir, filename])
-    utils.save(os.path.join(store_dir, filename), file_obj)
+        utils.mkdir(store_dir)
+        url_path = '/'.join([rand_dir, filename])
+        utils.write_put(os.path.join(store_dir, filename))
 
     return url_for("download", path=url_path, _external=True), 201
 
