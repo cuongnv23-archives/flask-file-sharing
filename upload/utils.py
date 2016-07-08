@@ -57,7 +57,7 @@ def write_post(file_path, file_obj):
         raise
 
 
-def validate_data(filename):
+def validate_filesize():
     ''' Check if request contains data and filter file type '''
     file_size = int(request.headers.get('Content-Length', 0))
     if file_size > MAX_FILE_SIZE:
