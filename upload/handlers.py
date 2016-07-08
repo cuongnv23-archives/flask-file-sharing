@@ -56,17 +56,17 @@ def upload(filename):
         file_obj = request.files.get('file')
         if not file_obj:
             abort(400, 'Data not received')
+
+        utils.validate_filesize()
         filename = secure_filename(file_obj.filename)
-        utils.validate_data(filename)
         utils.mkdir(store_dir)
         url_path = '/'.join([rand_dir, filename])
         utils.write_post(os.path.join(store_dir, filename), file_obj)
     elif request.method == 'PUT':
         if not filename:
             abort(400, 'Data not received')
+        utils.validate_filesize()
         filename = secure_filename(filename)
-        utils.validate_data(filename)
-        file_obj = None
         utils.mkdir(store_dir)
         url_path = '/'.join([rand_dir, filename])
         utils.write_put(os.path.join(store_dir, filename))
