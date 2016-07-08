@@ -4,12 +4,7 @@
 import os
 import string
 import errno
-try:
-    from config import RAND_DIR_LENGTH, BUFFER_SIZE, MAX_FILE_SIZE
-except ImportError:
-    RAND_DIR_LENGTH = 6
-    BUFFER_SIZE = 1024 * 16
-    MAX_FILE_SIZE = 1024 * 1024 * 10
+from config import RAND_DIR_LENGTH, BUFFER_SIZE, MAX_FILE_SIZE
 from random import SystemRandom as SR
 from flask import request, abort
 from upload.logs import logger
