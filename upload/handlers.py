@@ -15,27 +15,27 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
 
 @app.errorhandler(400)
-def bad_request(error):
+def bad_request(err):
     ''' HTTP 400 code '''
-    return make_response('{}'.format(error.description), 400)
+    return make_response('{}'.format(err.description), 400)
 
 
 @app.errorhandler(404)
-def not_found(error):
+def not_found(err):
     ''' HTTP 404 code '''
     logger.error('File not found')
-    return make_response('{}'.format(error.description), 404)
+    return make_response('{}'.format(err.description), 404)
 
 
 @app.errorhandler(405)
-def not_allowed(error):
+def not_allowed(err):
     ''' HTTP 405 code '''
     logger.error('Method not allowed')
-    return make_response('{}'.format(error.description), 405)
+    return make_response('{}'.format(err.description), 405)
 
 
 @app.errorhandler(413)
-def file_too_large(error):
+def file_too_large(err):
     ''' HTTP 413 code '''
     file_size = int(request.headers.get('Content-Length')) / 1024 / 1024
     limit_size = MAX_FILE_SIZE / 1024 / 1024
@@ -79,10 +79,13 @@ def upload(filename):
                 '''
                 abort(400)
         else:
+            '''
+            This supports uploading file without sepcifying form in request
+            ex: curl --upload-file file -X POST
+            '''
             if filename:
                 '''
-                This supports uploading file without sepcifying form in request
-                ex: curl --upload-file file -X POST
+                Only allow if filename specified
                 '''
                 utils.mkdir(store_dir)
                 url_path = '/'.join([rand_dir, filename])
