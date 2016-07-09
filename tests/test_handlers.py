@@ -30,15 +30,18 @@ def test_post(client):
     large_data = {'file': (StringIO('file content' * MAX_FILE_SIZE),
                            'test.txt')}
     rv_201 = client.post('/', data=data_sample)
-    rv_400 = client.post('/', data=empty_data)
-    rv_404 = client.post('/test.txt')
+    rv_201_stream = client.post('/test.txt', data='file content')
+    rv_400_empty = client.post('/', data=empty_data)
+    rv_400_stream = client.post('/test.txt')
     rv_413 = client.post('/', data=large_data)
 
     assert rv_201.status_code == 201
     assert rv_201.data.endswith('test.txt')
-    assert rv_400.status_code == 400
-    assert rv_400.data == 'Data not received'
-    assert rv_404.status_code == 404
+    assert rv_201_stream.status_code == 201
+    assert rv_201_stream.data.endswith('test.txt')
+    assert rv_400_empty.status_code == 400
+    assert rv_400_empty.data == 'Data not received'
+    assert rv_400_stream.status_code == 400
     assert rv_413.status_code == 413
     assert rv_413.data == 'File too large. Limit {}MB'.format(
         MAX_FILE_SIZE / 1024 / 1024)
