@@ -6,5 +6,5 @@ COPY . /opt/app
 WORKDIR /opt/app
 RUN find . \( -name __pycache__ -o -name '*.pyc' \) -delete
 RUN tox
-EXPOSE 8080
+EXPOSE 5000
 CMD ["python", "run.py"]
