@@ -7,8 +7,6 @@ UPLOAD_DIR = '/tmp/uploads'
 RAND_DIR_LENGTH = 6
 # max file size. MANDATORY
 MAX_FILE_SIZE = 1024 * 1024 * 10
-# buffer memory to save file. Default '16KB'
-BUFFER_SIZE = 1024 * 16
 # log level(CRITICAL, ERROR, WARNING, INFO, DEBUG). Default 'INFO'
 LOG_LEVEL = 'INFO'
 # log file. MANDATORY

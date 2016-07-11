@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-from StringIO import StringIO
+import os
 from .context import app
 import pytest
 from config import MAX_FILE_SIZE
+import tempfile
 
 
-# Test application methods
 @pytest.fixture
 def client():
     ''' Create test_client '''
@@ -17,44 +16,74 @@ def client():
     return test
 
 
-def test_get(client):
-    ''' Test GET '''
-    rv_405 = client.get('/')
-    assert rv_405.status_code == 405
+def create_tmpfile(content):
+    ''' Create a tmp file for reading '''
+    tmpdir = tempfile.mkdtemp()
+    tmpfile = os.path.join(tmpdir, 'test.txt')
+    with open(tmpfile, 'wb') as f:
+        f.write(content)
+    return tmpfile
+
+samplefile = create_tmpfile('file content')
+largefile = create_tmpfile('file content' * MAX_FILE_SIZE)  # ~120MB
 
 
-def test_post(client):
-    ''' Test POST '''
-    data_sample = {'file': (StringIO('file content'), 'test.txt')}
-    empty_data = {'file': 'test.txt'}
-    large_data = {'file': (StringIO('file content' * MAX_FILE_SIZE),
-                           'test.txt')}
-    rv_201 = client.post('/', data=data_sample)
-    rv_400 = client.post('/', data=empty_data)
-    rv_404 = client.post('/test.txt')
-    rv_413 = client.post('/', data=large_data)
+def test_post_form(client):
+    ''' Send POST request by form '''
+    # send file like curl -F file=@samplefile http://host/
+    rv = client.post('/', data={'file': (samplefile, 'test.txt')})
+    # send file like curl -F file=@samplefile http://host/newname.txt
+    rv_newname = client.post('/newname.txt', data={'file': (samplefile)})
 
-    assert rv_201.status_code == 201
-    assert rv_201.data.endswith('test.txt')
-    assert rv_400.status_code == 400
-    assert rv_400.data == 'Data not received'
-    assert rv_404.status_code == 404
-    assert rv_413.status_code == 413
-    assert rv_413.data == 'File too large. Limit {}MB'.format(
-        MAX_FILE_SIZE / 1024 / 1024)
+    assert rv.status_code == 201
+    assert rv.data.endswith('test.txt')
+    assert rv_newname.status_code == 201
+    assert rv_newname.data.endswith('newname.txt')
 
 
-def test_put(client):
-    ''' Test PUT '''
-    data_sample = 'file content'
-    rv_201 = client.put('/test.txt', data=data_sample)
-    rv_400 = client.put('/', data=data_sample)
-    rv_413 = client.put('/test.txt', data=data_sample * MAX_FILE_SIZE)
+def test_post_stream(client):
+    ''' Send POST request by stream '''
+    # curl -X POST --upload-file test.txt http://host/
+    rv = client.post('/test.txt', data=samplefile)
+    # curl -X POST --upload-file test.txt http://host/newname.txt
+    rv_newname = client.post('/newname.txt', data=samplefile)
 
-    assert rv_201.status_code == 201
-    assert rv_201.data.endswith('test.txt')
-    assert rv_400.status_code == 400
-    assert rv_400.data == 'Data not received'
-    assert rv_413.status_code == 413
-    assert rv_413.data == 'File too large. Limit {}MB'.format(
-        MAX_FILE_SIZE / 1024 / 1024)
+    assert rv.status_code == 201
+    assert rv.data.endswith('test.txt')
+    assert rv_newname.status_code == 201
+    assert rv_newname.data.endswith('newname.txt')
+
+
+def test_put_form(client):
+    ''' Send PUT request by form '''
+    # curl -X PUT -F file=@test.txt http://host/
+    rv = client.put('/', data={'file': (samplefile, 'test.txt')})
+    # curl -X PUT -F file=@test.txt http://host/newname.txt
+    rv_newname = client.put('/newname.txt', data={'file': (samplefile)})
+
+    assert rv.status_code == 201
+    assert rv.data.endswith('test.txt')
+    assert rv_newname.status_code == 201
+    assert rv_newname.data.endswith('newname.txt')
+
+
+def test_large_file_post(client):
+    ''' Send POST request by large file object '''
+    # curl -X POST -F file=@test.txt http://host/
+    rv_form = client.post('/', data={'file': (largefile, 'test.txt')})
+    # curl -X POST --upload-file test.txt http://host/
+    rv_stream = client.post('/test.txt', data='content' * MAX_FILE_SIZE)
+
+    assert rv_form.status_code == 413
+    assert rv_stream.status_code == 413
+
+
+def test_large_file_put(client):
+    ''' Send PUT request by large file object '''
+    # curl -X PUT -F file=@test.txt http://host/
+    rv_form = client.put('/', data={'file': (largefile, 'test.txt')})
+    # curl -X PUT --upload-file test.txt http://host/
+    rv_stream = client.put('/test.txt', data='content' * MAX_FILE_SIZE)
+
+    assert rv_form.status_code == 413
+    assert rv_stream.status_code == 413

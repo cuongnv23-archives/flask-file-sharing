@@ -4,7 +4,7 @@
 import os
 import string
 import errno
-from config import RAND_DIR_LENGTH, BUFFER_SIZE, MAX_FILE_SIZE
+from config import RAND_DIR_LENGTH, MAX_FILE_SIZE
 from random import SystemRandom as SR
 from flask import request, abort
 from upload.logs import logger
@@ -33,12 +33,15 @@ def rand_dir():
                    for _ in range(RAND_DIR_LENGTH))
 
 
-def write_put(file_path):
-    ''' Write file for PUT request '''
+def write_stream(file_path):
+    '''
+    Write file by accessing to stream
+    http://flask.pocoo.org/docs/0.11/api/#flask.Request.stream
+    '''
     try:
         with open(file_path, 'wb') as f:
             while True:
-                chunk = request.stream.read(BUFFER_SIZE)
+                chunk = request.stream.read(1024 * 16)
                 if chunk:
                     f.write(chunk)
                 else:
@@ -48,10 +51,13 @@ def write_put(file_path):
         raise
 
 
-def write_post(file_path, file_obj):
-    ''' Write file to POST method '''
+def write_form(file_path, file_obj):
+    '''
+    Write file by accessing to 'save'
+    https://github.com/pallets/werkzeug/blob/master/werkzeug/datastructures.py#L2635
+    '''
     try:
-        file_obj.save(file_path, BUFFER_SIZE)
+        file_obj.save(file_path)
     except:
         logger.error('Failed to save file {}'.format(file_path, exc_info=True))
         raise
@@ -59,8 +65,11 @@ def write_post(file_path, file_obj):
 
 def validate_filesize():
     ''' Check if request contains data and filter file type '''
-    file_size = int(request.headers.get('Content-Length', 0))
+    if request.headers.get('Content-Length'):
+        file_size = int(request.headers.get('Content-Length'))
+    else:
+        file_size = None
     if file_size > MAX_FILE_SIZE:
         abort(413)
-    if file_size == 0:
+    if not file_size:
         abort(400, 'No data received')
