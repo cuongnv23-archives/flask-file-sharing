@@ -40,10 +40,14 @@ def write_stream(file_path):
     '''
     try:
         with open(file_path, 'wb') as f:
+            buf_max = 1024 * 500
+            buf = 1024 * 16
             while True:
-                chunk = request.stream.read(1024 * 16)
+                chunk = request.stream.read(buf)
                 if chunk:
                     f.write(chunk)
+                    if buf < buf_max:
+                        buf = buf * 2
                 else:
                     break
     except:
