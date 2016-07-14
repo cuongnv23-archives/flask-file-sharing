@@ -1,0 +1,14 @@
+FROM python:2.7.12-alpine
+RUN apk update
+RUN apk add python-dev build-base linux-headers pcre-dev
+# make uwsgi installed via pip correctly https://github.com/gliderlabs/docker-alpine/issues/158
+RUN pip install https://github.com/unbit/uwsgi/archive/uwsgi-2.0.zip#egg=uwsgi
+ADD requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
+COPY . /opt/app
+COPY conf/uwsgi/uwsgi.ini /opt/app
+WORKDIR /opt/app
+RUN find . \( -name __pycache__ -o -name '*.pyc' \) -delete
+RUN tox
+EXPOSE 5000
+CMD ["uwsgi", "uwsgi.ini"]
