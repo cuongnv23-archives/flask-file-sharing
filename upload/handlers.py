@@ -23,15 +23,15 @@ def bad_request(err):
 @app.errorhandler(404)
 def not_found(err):
     ''' HTTP 404 code '''
-    logger.error('File not found')
-    return make_response('{}'.format(err.description), 404)
+    logger.error('Not found')
+    return make_response('Not found', 404)
 
 
 @app.errorhandler(405)
 def not_allowed(err):
     ''' HTTP 405 code '''
     logger.error('Method not allowed')
-    return make_response('{}'.format(err.description), 405)
+    return make_response('Method not allowed', 405)
 
 
 @app.errorhandler(413)
@@ -50,7 +50,7 @@ def upload(file_name):
     utils.validate_filesize()
     rand_dir = utils.rand_dir()
     store_dir = os.path.join(UPLOAD_DIR, rand_dir)
-    file_obj = request.files.get('file', None)
+    file_obj = request.files.get('file')
     if file_obj:
         '''
         File sent via multipart/form-data
