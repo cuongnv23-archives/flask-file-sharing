@@ -2,10 +2,9 @@ FROM python:2.7.12-alpine
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 RUN pip install gunicorn
-COPY . /opt/app
+COPY . /opt/app/
+COPY conf/gunicorn/gunicorn.cfg.py /opt/app/
 WORKDIR /opt/app
 RUN find . \( -name __pycache__ -o -name '*.pyc' \) -delete
 RUN tox
-VOLUME /tmp/uploads
-EXPOSE 5000
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "4", "run:app"]
+CMD ["gunicorn", "-c", "gunicorn.cfg.py", "run:app"]
