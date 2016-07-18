@@ -37,7 +37,7 @@ def not_allowed(err):
 @app.errorhandler(413)
 def file_too_large(err):
     ''' HTTP 413 code '''
-    file_size = int(request.headers.get('Content-Length')) / 1024 / 1024
+    file_size = request.content_length / 1024 / 1024
     limit_size = MAX_FILE_SIZE / 1024 / 1024
     logger.error('File too large: {}MB'.format(file_size))
     return make_response('File too large. Limit {}MB'.format(limit_size), 413)
@@ -47,32 +47,34 @@ def file_too_large(err):
 @app.route('/<string:file_name>', methods=['POST', 'PUT'])
 def upload(file_name):
     ''' Write data '''
-    utils.validate_filesize()
     rand_dir = utils.rand_dir()
     store_dir = os.path.join(UPLOAD_DIR, rand_dir)
     file_obj = request.files.get('file')
     if file_obj:
         '''
-        File sent via multipart/form-data
+        curl -X POST|PUT -F file=@myfile
         '''
+        # check if file sent is empty or not
+        file_obj.seek(0, os.SEEK_END)
+        if file_obj.tell() == 0:
+            filesize = 0
+        else:
+            filesize = request.content_length
+
         if not file_name:
-            '''
-            curl -X POST|PUT -F file=@myfile http://host/
-            '''
             fname = secure_filename(file_obj.filename)
         else:
-            '''
-            curl -X POST|PUT -F file=@myfile http://host/file_name
-            '''
             fname = secure_filename(file_name)
+        utils.validate_filesize(filesize)
         url_path = '/'.join([rand_dir, fname])
         utils.mkdir(store_dir)
         utils.write_form(os.path.join(store_dir, fname), file_obj)
     elif not file_obj and file_name:
         '''
-        File sent via stream
-        curl -X POST|PUT --upload-file myfile http://host/
+        curl -X POST|PUT --upload-file myfile
         '''
+        filesize = request.content_length
+        utils.validate_filesize(filesize)
         fname = secure_filename(file_name)
         url_path = '/'.join([rand_dir, fname])
         utils.mkdir(store_dir)

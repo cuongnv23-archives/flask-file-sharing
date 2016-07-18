@@ -67,12 +67,8 @@ def write_form(file_path, file_obj):
         raise
 
 
-def validate_filesize():
-    ''' Check if request contains data and filter file type '''
-    if request.headers.get('Content-Length'):
-        file_size = int(request.headers.get('Content-Length'))
-    else:
-        file_size = None
+def validate_filesize(file_size):
+    ''' Validate if file_size is too large or empty '''
     if file_size > MAX_FILE_SIZE:
         abort(413)
     if not file_size:

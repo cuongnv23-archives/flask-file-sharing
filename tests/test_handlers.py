@@ -25,7 +25,7 @@ def create_tmpfile(content):
     return tmpfile
 
 samplefile = create_tmpfile('file content')
-largefile = create_tmpfile('file content' * MAX_FILE_SIZE)  # ~120MB
+largefile = create_tmpfile('file content' * MAX_FILE_SIZE)
 
 
 def test_post_form(client):
@@ -87,3 +87,16 @@ def test_large_file_put(client):
 
     assert rv_form.status_code == 413
     assert rv_stream.status_code == 413
+
+
+def test_empty_file_post(client):
+    from StringIO import StringIO
+    # curl -X POST -F file=@empty.txt http://host/
+    rv_form = client.post('/', data={'file': (StringIO(), 'empty.txt')})
+    # curl -X PUT -F --upload-file empty.txt
+    rv_stream = client.post('/empty.txt', data='')
+
+    assert rv_form.status_code == 400
+    assert rv_stream.status_code == 400
+    assert rv_stream.data == 'No data received'
+    assert rv_form.data == 'No data received'
