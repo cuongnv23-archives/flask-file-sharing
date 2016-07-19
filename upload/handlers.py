@@ -57,6 +57,7 @@ def upload(file_name):
         # check if file sent is empty or not
         file_obj.seek(0, os.SEEK_END)
         filesize = file_obj.tell()
+        file_obj.seek(0)
 
         if not file_name:
             fname = secure_filename(file_obj.filename)
