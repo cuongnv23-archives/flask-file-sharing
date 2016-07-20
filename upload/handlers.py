@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from flask import Flask, request, make_response, \
-    send_from_directory, abort, url_for, render_template
+    send_from_directory, abort, url_for, render_template, jsonify
 from werkzeug.utils import secure_filename
 from config import UPLOAD_DIR, MAX_FILE_SIZE
 from upload import utils
@@ -79,35 +79,36 @@ def upload(file_name):
         utils.write_stream(os.path.join(store_dir, fname))
     else:
         abort(400)
-    return url_for("download", path=url_path, _external=True), 201
+
+    prv_url = url_for("preview", path=url_path, _external=True)
+    dl_url = url_for("download", path=url_path, _external=True)
+
+    rv = jsonify(download=dl_url,
+                 preview=prv_url)
+
+    return rv, 201
+
+
+@app.route('/d/<path:path>', methods=['GET'])
+def download(path):
+    ''' Return file '''
+    logger.info('GET {}'.format(path))
+    return send_from_directory(UPLOAD_DIR, path), 201
 
 
 @app.route('/<path:path>', methods=['GET'])
-def download(path):
+def preview(path):
     ''' Return file from path directory'''
     logger.info('GET {}'.format(path))
-    url = url_for('download', path=path, _external=True)
+    dl_url = url_for('download', path=path, _external=True)
     filepath = os.path.join(UPLOAD_DIR, path)
-    filesize = os.path.getsize(filepath)
-    filename = os.path.basename(filepath)
     if not os.path.isfile(filepath):
         abort(404)
-
-    try:
-        if request.headers['Referer'] == url:
-            response = make_response(send_from_directory(UPLOAD_DIR, path))
-            response.headers['Content-Diposition'] = \
-                'attachment; filename={}'.format(filename)
-            response.headers['X-Served-by-Flask'] = 'True'
-
-            return response
-    except KeyError:
-        response = make_response(render_template('preview.html',
-                                                 title=filename,
-                                                 file_name=filename,
-                                                 file_size=filesize,
-                                                 url=url
-                                                 )
-                                 )
-
-        return response
+    filesize = os.path.getsize(filepath)
+    filename = os.path.basename(filepath)
+    return render_template('preview.html',
+                           title=filename,
+                           file_name=filename,
+                           file_size=filesize,
+                           url=dl_url
+                           ), 201
