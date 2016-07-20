@@ -1,0 +1,14 @@
+<html>
+    <head>
+    {% if title %}
+        <title>{{ title }} - Curl file to share</title>
+    {% else %}
+        <title>Curl file to share</title>
+    {% endif %}
+</head>
+<body>
+    Name: {{ file_name }} </br>
+    Size: {{ file_size }} </br>
+    <a href="{{ url }}">Download</a> 
+</body>
+</html>
