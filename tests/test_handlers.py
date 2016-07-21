@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import json
 from .context import app
 import pytest
 from config import MAX_FILE_SIZE
@@ -28,6 +29,14 @@ samplefile = create_tmpfile('file content')
 largefile = create_tmpfile('file content' * MAX_FILE_SIZE)
 
 
+def check_response(resp, filename):
+    assert resp.status_code == 201
+    assert resp.headers['Content-Type'] == 'application/json'
+    resp_json = json.loads(resp.data)
+    assert str(resp_json['download']).endswith(filename)
+    assert str(resp_json['preview']).endswith(filename)
+
+
 def test_post_form(client):
     ''' Send POST request by form '''
     # send file like curl -F file=@samplefile http://host/
@@ -35,10 +44,8 @@ def test_post_form(client):
     # send file like curl -F file=@samplefile http://host/newname.txt
     rv_newname = client.post('/newname.txt', data={'file': (samplefile)})
 
-    assert rv.status_code == 201
-    assert rv.data.endswith('test.txt')
-    assert rv_newname.status_code == 201
-    assert rv_newname.data.endswith('newname.txt')
+    check_response(rv, 'test.txt')
+    check_response(rv_newname, 'newname.txt')
 
 
 def test_post_stream(client):
@@ -48,10 +55,8 @@ def test_post_stream(client):
     # curl -X POST --upload-file test.txt http://host/newname.txt
     rv_newname = client.post('/newname.txt', data=samplefile)
 
-    assert rv.status_code == 201
-    assert rv.data.endswith('test.txt')
-    assert rv_newname.status_code == 201
-    assert rv_newname.data.endswith('newname.txt')
+    check_response(rv, 'test.txt')
+    check_response(rv_newname, 'newname.txt')
 
 
 def test_put_form(client):
@@ -61,10 +66,18 @@ def test_put_form(client):
     # curl -X PUT -F file=@test.txt http://host/newname.txt
     rv_newname = client.put('/newname.txt', data={'file': (samplefile)})
 
-    assert rv.status_code == 201
-    assert rv.data.endswith('test.txt')
-    assert rv_newname.status_code == 201
-    assert rv_newname.data.endswith('newname.txt')
+    check_response(rv, 'test.txt')
+    check_response(rv_newname, 'newname.txt')
+
+
+def test_put_stream(client):
+    ''' Send PUT request by stream '''
+    # curl -X PUT --upload-file test.txt http://host/
+    rv = client.put('/test.txt', data=samplefile)
+    # curl -X PUT --upload-file test.txt http://host/newname.txt
+    rv_newname = client.put('/newname.txt', data=samplefile)
+    check_response(rv, 'test.txt')
+    check_response(rv_newname, 'newname.txt')
 
 
 def test_large_file_post(client):

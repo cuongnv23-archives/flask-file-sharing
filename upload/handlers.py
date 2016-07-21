@@ -83,17 +83,21 @@ def upload(file_name):
     prv_url = url_for("preview", path=url_path, _external=True)
     dl_url = url_for("download", path=url_path, _external=True)
 
-    rv = jsonify(download=dl_url,
-                 preview=prv_url)
+    resp = jsonify(download=dl_url, preview=prv_url)
 
-    return rv, 201
+    return resp, 201
 
 
 @app.route('/d/<path:path>', methods=['GET'])
 def download(path):
     ''' Return file '''
     logger.info('GET {}'.format(path))
-    return send_from_directory(UPLOAD_DIR, path), 201
+    filename = os.path.basename(path)
+    response = make_response(send_from_directory(UPLOAD_DIR, path))
+    response.headers['Content-Disposition'] = \
+        'attachment; filename="{}"'.format(filename)
+
+    return response
 
 
 @app.route('/<path:path>', methods=['GET'])
@@ -106,9 +110,11 @@ def preview(path):
         abort(404)
     filesize = os.path.getsize(filepath)
     filename = os.path.basename(filepath)
+    filetype = utils.get_mime_type(filepath)
     return render_template('preview.html',
                            title=filename,
                            file_name=filename,
                            file_size=filesize,
+                           file_type=filetype,
                            url=dl_url
-                           ), 201
+                           )
