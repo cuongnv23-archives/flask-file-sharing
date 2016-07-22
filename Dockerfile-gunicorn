@@ -1,4 +1,4 @@
-FROM python:2.7.12-alpine
+FROM python:2.7.12
 ADD requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 RUN pip install gunicorn
