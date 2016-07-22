@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # directory store files. MANDATORY
-UPLOAD_DIR = '/tmp/uploads'
+UPLOAD_DIR = '/tmp/uploadss'
 # length of uri in random format. Default '6'
 RAND_DIR_LENGTH = 6
 # max file size. MANDATORY

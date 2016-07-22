@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import magic
 import string
 import errno
 from config import RAND_DIR_LENGTH, MAX_FILE_SIZE
@@ -65,6 +66,11 @@ def write_form(file_path, file_obj):
     except:
         logger.error('Failed to save file {}'.format(file_path, exc_info=True))
         raise
+
+
+def get_mime_type(file):
+    ''' Guess mime type of file '''
+    return magic.from_file(file, mime=True)
 
 
 def validate_filesize(file_size):

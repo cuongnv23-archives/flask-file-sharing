@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 from flask import Flask, request, make_response, \
-    send_from_directory, abort, url_for
+    send_from_directory, abort, url_for, render_template, jsonify
 from werkzeug.utils import secure_filename
 from config import UPLOAD_DIR, MAX_FILE_SIZE
 from upload import utils
@@ -79,11 +79,42 @@ def upload(file_name):
         utils.write_stream(os.path.join(store_dir, fname))
     else:
         abort(400)
-    return url_for("download", path=url_path, _external=True), 201
+
+    prv_url = url_for("preview", path=url_path, _external=True)
+    dl_url = url_for("download", path=url_path, _external=True)
+
+    resp = jsonify(download=dl_url, preview=prv_url)
+
+    return resp, 201
+
+
+@app.route('/d/<path:path>', methods=['GET'])
+def download(path):
+    ''' Return file '''
+    logger.info('GET {}'.format(path))
+    filename = os.path.basename(path)
+    response = make_response(send_from_directory(UPLOAD_DIR, path))
+    response.headers['Content-Disposition'] = \
+        'attachment; filename="{}"'.format(filename)
+
+    return response
 
 
 @app.route('/<path:path>', methods=['GET'])
-def download(path):
+def preview(path):
     ''' Return file from path directory'''
     logger.info('GET {}'.format(path))
-    return send_from_directory(UPLOAD_DIR, path)
+    dl_url = url_for('download', path=path, _external=True)
+    filepath = os.path.join(UPLOAD_DIR, path)
+    if not os.path.isfile(filepath):
+        abort(404)
+    filesize = os.path.getsize(filepath)
+    filename = os.path.basename(filepath)
+    filetype = utils.get_mime_type(filepath)
+    return render_template('preview.html',
+                           title=filename,
+                           file_name=filename,
+                           file_size=filesize,
+                           file_type=filetype,
+                           url=dl_url
+                           )
