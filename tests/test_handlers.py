@@ -38,10 +38,9 @@ def check_response(resp, filename):
 
 
 def test_post_form(client):
-    ''' Send POST request by form '''
-    # send file like curl -F file=@samplefile http://host/
+    # curl -F file=@samplefile http://host/
     rv = client.post('/', data={'file': (samplefile, 'test.txt')})
-    # send file like curl -F file=@samplefile http://host/newname.txt
+    # curl -F file=@samplefile http://host/newname.txt
     rv_newname = client.post('/newname.txt', data={'file': (samplefile)})
 
     check_response(rv, 'test.txt')
@@ -49,7 +48,6 @@ def test_post_form(client):
 
 
 def test_post_stream(client):
-    ''' Send POST request by stream '''
     # curl -X POST --upload-file test.txt http://host/
     rv = client.post('/test.txt', data=samplefile)
     # curl -X POST --upload-file test.txt http://host/newname.txt
@@ -71,17 +69,16 @@ def test_put_form(client):
 
 
 def test_put_stream(client):
-    ''' Send PUT request by stream '''
     # curl -X PUT --upload-file test.txt http://host/
     rv = client.put('/test.txt', data=samplefile)
     # curl -X PUT --upload-file test.txt http://host/newname.txt
     rv_newname = client.put('/newname.txt', data=samplefile)
+
     check_response(rv, 'test.txt')
     check_response(rv_newname, 'newname.txt')
 
 
 def test_large_file_post(client):
-    ''' Send POST request by large file object '''
     # curl -X POST -F file=@test.txt http://host/
     rv_form = client.post('/', data={'file': (largefile, 'test.txt')})
     # curl -X POST --upload-file test.txt http://host/
@@ -92,7 +89,6 @@ def test_large_file_post(client):
 
 
 def test_large_file_put(client):
-    ''' Send PUT request by large file object '''
     # curl -X PUT -F file=@test.txt http://host/
     rv_form = client.put('/', data={'file': (largefile, 'test.txt')})
     # curl -X PUT --upload-file test.txt http://host/
